@@ -11,7 +11,7 @@ export interface SearchResult {
   rootDirectory: string
 }
 
-function getDefaultGlobOptions(followSymbolicLinks: boolean): glob.GlobOptions {
+function getGlobOptions(followSymbolicLinks: boolean): glob.GlobOptions {
   return {
     followSymbolicLinks: followSymbolicLinks,
     implicitDescendants: true,
@@ -19,7 +19,7 @@ function getDefaultGlobOptions(followSymbolicLinks: boolean): glob.GlobOptions {
   }
 }
 
-/**
+/** 
  * If multiple paths are specific, the least common ancestor (LCA) of the search paths is used as
  * the delimiter to control the directory structure for the artifact. This function returns the LCA
  * when given an array of search paths
@@ -85,7 +85,7 @@ export async function findFilesToUpload(
   const searchResults: string[] = []
   const globber = await glob.create(
     searchPath,
-    getDefaultGlobOptions(followSymbolicLinks)
+    getGlobOptions(followSymbolicLinks)
   )
   const rawSearchResults: string[] = await globber.glob()
 
@@ -98,7 +98,8 @@ export async function findFilesToUpload(
     if (!stats.isDirectory()) {
       // check for symbolic links
       if(stats.isSymbolicLink()){
-        info(`${searchResult} is a symbolic link`)
+        info(`${searchResult} is a symbolic link. Will attempt to create a symlink`)
+        fs.createReadStream(searchResult)
       }
       debug(`File:${searchResult} was found using the provided searchPath`)
       searchResults.push(searchResult)

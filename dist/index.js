@@ -6228,7 +6228,7 @@ const core_1 = __webpack_require__(470);
 const path_1 = __webpack_require__(622);
 const util_1 = __webpack_require__(669);
 const lstat = util_1.promisify(fs.lstat);
-function getDefaultGlobOptions(followSymbolicLinks) {
+function getGlobOptions(followSymbolicLinks) {
     return {
         followSymbolicLinks: followSymbolicLinks,
         implicitDescendants: true,
@@ -6289,7 +6289,7 @@ function getMultiPathLCA(searchPaths) {
 function findFilesToUpload(searchPath, followSymbolicLinks) {
     return __awaiter(this, void 0, void 0, function* () {
         const searchResults = [];
-        const globber = yield glob.create(searchPath, getDefaultGlobOptions(followSymbolicLinks));
+        const globber = yield glob.create(searchPath, getGlobOptions(followSymbolicLinks));
         const rawSearchResults = yield globber.glob();
         /*
           Directories will be rejected if attempted to be uploaded. This includes just empty
@@ -6300,7 +6300,8 @@ function findFilesToUpload(searchPath, followSymbolicLinks) {
             if (!stats.isDirectory()) {
                 // check for symbolic links
                 if (stats.isSymbolicLink()) {
-                    core_1.info(`${searchResult} is a symbolic link`);
+                    core_1.info(`${searchResult} is a symbolic link. Will attempt to create a symlink`);
+                    fs.createReadStream(searchResult);
                 }
                 core_1.debug(`File:${searchResult} was found using the provided searchPath`);
                 searchResults.push(searchResult);
