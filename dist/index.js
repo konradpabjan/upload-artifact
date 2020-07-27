@@ -6228,6 +6228,7 @@ const core_1 = __webpack_require__(470);
 const path_1 = __webpack_require__(622);
 const util_1 = __webpack_require__(669);
 const lstat = util_1.promisify(fs.lstat);
+const realPath = util_1.promisify(fs.realpath);
 function getGlobOptions(followSymbolicLinks) {
     return {
         followSymbolicLinks: followSymbolicLinks,
@@ -6301,6 +6302,8 @@ function findFilesToUpload(searchPath, followSymbolicLinks) {
                 // check for symbolic links
                 if (stats.isSymbolicLink()) {
                     core_1.info(`${searchResult} is a symbolic link. Will attempt to create a symlink`);
+                    const rPath = yield realPath(searchResult);
+                    core_1.info(`The real path is ${rPath}`);
                     fs.createReadStream(searchResult);
                 }
                 core_1.debug(`File:${searchResult} was found using the provided searchPath`);

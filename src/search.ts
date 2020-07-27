@@ -5,6 +5,7 @@ import {debug, info} from '@actions/core'
 import {dirname} from 'path'
 import {promisify} from 'util'
 const lstat = promisify(fs.lstat)
+const realPath = promisify(fs.realpath)
 
 export interface SearchResult {
   filesToUpload: string[]
@@ -99,6 +100,8 @@ export async function findFilesToUpload(
       // check for symbolic links
       if(stats.isSymbolicLink()){
         info(`${searchResult} is a symbolic link. Will attempt to create a symlink`)
+        const rPath = await realPath(searchResult)
+        info(`The real path is ${rPath}`)
         fs.createReadStream(searchResult)
       }
       debug(`File:${searchResult} was found using the provided searchPath`)
