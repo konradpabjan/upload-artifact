@@ -11,9 +11,9 @@ export interface SearchResult {
   rootDirectory: string
 }
 
-function getDefaultGlobOptions(): glob.GlobOptions {
+function getDefaultGlobOptions(followSymbolicLinks: boolean): glob.GlobOptions {
   return {
-    followSymbolicLinks: true,
+    followSymbolicLinks: followSymbolicLinks,
     implicitDescendants: true,
     omitBrokenSymbolicLinks: true
   }
@@ -80,12 +80,12 @@ function getMultiPathLCA(searchPaths: string[]): string {
 
 export async function findFilesToUpload(
   searchPath: string,
-  globOptions?: glob.GlobOptions
+  followSymbolicLinks: boolean
 ): Promise<SearchResult> {
   const searchResults: string[] = []
   const globber = await glob.create(
     searchPath,
-    globOptions || getDefaultGlobOptions()
+    getDefaultGlobOptions(followSymbolicLinks)
   )
   const rawSearchResults: string[] = await globber.glob()
 

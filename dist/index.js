@@ -3994,7 +3994,8 @@ function run() {
         try {
             const name = core.getInput(constants_1.Inputs.Name, { required: false });
             const path = core.getInput(constants_1.Inputs.Path, { required: true });
-            const searchResult = yield search_1.findFilesToUpload(path);
+            const followSymLinks = (core.getInput(constants_1.Inputs.Path) || 'false').toUpperCase() === 'TRUE';
+            const searchResult = yield search_1.findFilesToUpload(path, followSymLinks);
             if (searchResult.filesToUpload.length === 0) {
                 core.warning(`No files were found for the provided path: ${path}. No artifacts will be uploaded.`);
             }
@@ -6227,9 +6228,9 @@ const core_1 = __webpack_require__(470);
 const path_1 = __webpack_require__(622);
 const util_1 = __webpack_require__(669);
 const lstat = util_1.promisify(fs.lstat);
-function getDefaultGlobOptions() {
+function getDefaultGlobOptions(followSymbolicLinks) {
     return {
-        followSymbolicLinks: true,
+        followSymbolicLinks: followSymbolicLinks,
         implicitDescendants: true,
         omitBrokenSymbolicLinks: true
     };
@@ -6285,10 +6286,10 @@ function getMultiPathLCA(searchPaths) {
     }
     return path.join(...commonPaths);
 }
-function findFilesToUpload(searchPath, globOptions) {
+function findFilesToUpload(searchPath, followSymbolicLinks) {
     return __awaiter(this, void 0, void 0, function* () {
         const searchResults = [];
-        const globber = yield glob.create(searchPath, globOptions || getDefaultGlobOptions());
+        const globber = yield glob.create(searchPath, getDefaultGlobOptions(followSymbolicLinks));
         const rawSearchResults = yield globber.glob();
         /*
           Directories will be rejected if attempted to be uploaded. This includes just empty

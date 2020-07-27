@@ -7,8 +7,10 @@ async function run(): Promise<void> {
   try {
     const name = core.getInput(Inputs.Name, {required: false})
     const path = core.getInput(Inputs.Path, {required: true})
+    const followSymLinks =
+      (core.getInput(Inputs.Path) || 'false').toUpperCase() === 'TRUE'
 
-    const searchResult = await findFilesToUpload(path)
+    const searchResult = await findFilesToUpload(path, followSymLinks)
     if (searchResult.filesToUpload.length === 0) {
       core.warning(
         `No files were found for the provided path: ${path}. No artifacts will be uploaded.`
