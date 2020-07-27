@@ -6222,9 +6222,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const glob = __importStar(__webpack_require__(281));
 const path = __importStar(__webpack_require__(622));
+const fs = __importStar(__webpack_require__(747));
 const core_1 = __webpack_require__(470);
-const fs_1 = __webpack_require__(747);
 const path_1 = __webpack_require__(622);
+const util_1 = __webpack_require__(669);
+const lstat = util_1.promisify(fs.lstat);
 function getDefaultGlobOptions() {
     return {
         followSymbolicLinks: true,
@@ -6293,7 +6295,12 @@ function findFilesToUpload(searchPath, globOptions) {
           directories so filter any directories out from the raw search results
         */
         for (const searchResult of rawSearchResults) {
-            if (!fs_1.lstatSync(searchResult).isDirectory()) {
+            const stats = yield lstat(searchResult);
+            if (!stats.isDirectory()) {
+                // check for symbolic links
+                if (stats.isSymbolicLink()) {
+                    core_1.info(`${searchResult} is a symbolic link`);
+                }
                 core_1.debug(`File:${searchResult} was found using the provided searchPath`);
                 searchResults.push(searchResult);
             }
