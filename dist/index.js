@@ -6304,7 +6304,12 @@ function findFilesToUpload(searchPath, followSymbolicLinks) {
                     core_1.info(`${searchResult} is a symbolic link. Will attempt to create a symlink`);
                     const rPath = yield realPath(searchResult);
                     core_1.info(`The real path is ${rPath}`);
-                    fs.createReadStream(searchResult);
+                    if (searchResult !== rPath) {
+                        fs.createReadStream(rPath);
+                    }
+                    else {
+                        fs.createReadStream(searchResult);
+                    }
                 }
                 core_1.debug(`File:${searchResult} was found using the provided searchPath`);
                 searchResults.push(searchResult);
