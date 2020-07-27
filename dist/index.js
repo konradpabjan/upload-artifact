@@ -6227,8 +6227,7 @@ const fs = __importStar(__webpack_require__(747));
 const core_1 = __webpack_require__(470);
 const path_1 = __webpack_require__(622);
 const util_1 = __webpack_require__(669);
-const lstat = util_1.promisify(fs.lstat);
-const realPath = util_1.promisify(fs.realpath);
+const stats = util_1.promisify(fs.stat);
 function getGlobOptions(followSymbolicLinks) {
     return {
         followSymbolicLinks: followSymbolicLinks,
@@ -6297,23 +6296,9 @@ function findFilesToUpload(searchPath, followSymbolicLinks) {
           directories so filter any directories out from the raw search results
         */
         for (const searchResult of rawSearchResults) {
-            const stats = yield lstat(searchResult);
-            if (!stats.isDirectory()) {
-                // check for symbolic links
-                if (stats.isSymbolicLink()) {
-                    core_1.info(`${searchResult} is a symbolic link. Will attempt to create a symlink`);
-                    const rPath = yield realPath(searchResult);
-                    core_1.info(`The real path is ${rPath}`);
-                    const moreStats = yield lstat(rPath);
-                    const isDir = moreStats.isDirectory();
-                    core_1.info(`The isDirectory property: ${isDir}`);
-                    if (searchResult !== rPath) {
-                        fs.createReadStream(rPath);
-                    }
-                    else {
-                        fs.createReadStream(searchResult);
-                    }
-                }
+            // isDirectory() returns false for symlinks if using fs.lstat(), make sure to use fs.stat() instead
+            const fileStatus = yield stats(searchResult);
+            if (!fileStatus.isDirectory()) {
                 core_1.debug(`File:${searchResult} was found using the provided searchPath`);
                 searchResults.push(searchResult);
             }

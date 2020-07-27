@@ -4,8 +4,7 @@ import * as fs from 'fs'
 import {debug, info} from '@actions/core'
 import {dirname} from 'path'
 import {promisify} from 'util'
-const lstat = promisify(fs.lstat)
-const realPath = promisify(fs.realpath)
+const stats = promisify(fs.stat)
 
 export interface SearchResult {
   filesToUpload: string[]
@@ -95,24 +94,9 @@ export async function findFilesToUpload(
     directories so filter any directories out from the raw search results
   */
   for (const searchResult of rawSearchResults) {
-    const stats = await lstat(searchResult)
-    if (!stats.isDirectory()) {
-      // check for symbolic links
-      if(stats.isSymbolicLink()){
-        info(`${searchResult} is a symbolic link. Will attempt to create a symlink`)
-        const rPath = await realPath(searchResult)
-        
-        info(`The real path is ${rPath}`)
-        const moreStats = await lstat(rPath)
-        const isDir = moreStats.isDirectory()
-        info(`The isDirectory property: ${isDir}`)
-
-        if(searchResult !== rPath){
-          fs.createReadStream(rPath)
-        } else {
-          fs.createReadStream(searchResult)
-        }
-      }
+    // isDirectory() returns false for symlinks if using fs.lstat(), make sure to use fs.stat() instead
+    const fileStatus = await stats(searchResult)
+    if(!fileStatus.isDirectory()){
       debug(`File:${searchResult} was found using the provided searchPath`)
       searchResults.push(searchResult)
     } else {
