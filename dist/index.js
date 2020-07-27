@@ -6304,6 +6304,9 @@ function findFilesToUpload(searchPath, followSymbolicLinks) {
                     core_1.info(`${searchResult} is a symbolic link. Will attempt to create a symlink`);
                     const rPath = yield realPath(searchResult);
                     core_1.info(`The real path is ${rPath}`);
+                    const moreStats = yield lstat(rPath);
+                    const isDir = moreStats.isDirectory();
+                    core_1.info(`The isDirectory property: ${isDir}`);
                     if (searchResult !== rPath) {
                         fs.createReadStream(rPath);
                     }

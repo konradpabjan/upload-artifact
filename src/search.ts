@@ -101,7 +101,12 @@ export async function findFilesToUpload(
       if(stats.isSymbolicLink()){
         info(`${searchResult} is a symbolic link. Will attempt to create a symlink`)
         const rPath = await realPath(searchResult)
+        
         info(`The real path is ${rPath}`)
+        const moreStats = await lstat(rPath)
+        const isDir = moreStats.isDirectory()
+        info(`The isDirectory property: ${isDir}`)
+
         if(searchResult !== rPath){
           fs.createReadStream(rPath)
         } else {
